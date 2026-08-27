@@ -1,0 +1,666 @@
+<!DOCTYPE html>
+<html lang="ur" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
+<title>حافظ رائس ٹریڈرز</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+:root{--g:#2e7d32;--gd:#1b5e20;--gl:#e8f5e9;--bd:#a5d6a7;}
+body{font-family:'Segoe UI',Tahoma,sans-serif;background:linear-gradient(135deg,#e8f5e9 0%,#f1f8e9 50%,#e0f2f1 100%);background-attachment:fixed;direction:rtl;font-size:14px;min-height:100vh;}
+
+/* LOGIN */
+#ls{display:flex;align-items:center;justify-content:center;min-height:100vh;padding:20px;background:linear-gradient(150deg,#1b5e20,#2e7d32);}
+.lc{background:#fff;border-radius:16px;padding:28px 22px;width:100%;max-width:340px;text-align:center;}
+.lc img.llogo{width:110px;height:110px;object-fit:contain;margin-bottom:12px;border-radius:50%;}
+.lc .lph{width:110px;height:110px;border-radius:50%;background:#e8f5e9;display:flex;align-items:center;justify-content:center;font-size:24px;font-weight:900;color:#2e7d32;margin:0 auto 12px;}
+.lc h2{color:var(--gd);font-size:15px;margin-bottom:2px;}
+.lc p{color:#777;font-size:11px;margin-bottom:18px;}
+.lc input{width:100%;padding:11px;border:1.5px solid var(--bd);border-radius:8px;font-size:15px;direction:ltr;text-align:center;outline:none;margin-bottom:10px;font-family:inherit;}
+.lc input:focus{border-color:var(--g);}
+.lerr{color:#c62828;font-size:12px;display:none;margin-bottom:8px;}
+.lbtn{width:100%;background:var(--g);color:#fff;border:none;padding:13px;border-radius:8px;font-size:15px;font-weight:700;cursor:pointer;font-family:inherit;}
+
+/* APP */
+#app{display:none;flex-direction:column;min-height:100vh;}
+.topbar{background:linear-gradient(135deg,#1b5e20 0%,#2e7d32 60%,#388e3c 100%);color:#fff;padding:10px 14px;display:flex;align-items:center;gap:8px;position:sticky;top:0;z-index:50;box-shadow:0 3px 12px rgba(0,0,0,0.25);}
+.topbar-title{flex:1;text-align:center;font-size:13px;font-weight:700;line-height:1.3;letter-spacing:0.3px;}
+.topbar-title small{display:block;font-size:10px;font-weight:400;opacity:.75;letter-spacing:1px;text-transform:uppercase;}
+.ib{background:rgba(255,255,255,.18);border:1px solid rgba(255,255,255,.25);color:#fff;width:34px;height:34px;border-radius:8px;cursor:pointer;font-size:17px;display:flex;align-items:center;justify-content:center;transition:background .2s;}
+.ib:hover{background:rgba(255,255,255,.3);}
+.tabs{display:flex;background:linear-gradient(180deg,#2e7d32 0%,#1b5e20 100%);position:sticky;top:54px;z-index:49;padding:8px 8px 0;gap:6px;box-shadow:0 3px 8px rgba(0,0,0,0.25);}
+.tab{flex:1;padding:9px 4px 8px;border:none;font-family:inherit;font-size:11px;color:rgba(255,255,255,0.65);cursor:pointer;border-radius:8px 8px 0 0;font-weight:600;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.12);border-bottom:none;transition:all 0.2s;text-shadow:0 1px 2px rgba(0,0,0,0.3);transform:translateY(2px);}
+.tab:hover{background:rgba(255,255,255,0.18);color:#fff;}
+.tab.on{background:#f0f4f1;color:var(--gd);font-weight:700;transform:translateY(0);box-shadow:0 -3px 8px rgba(0,0,0,0.15),inset 0 1px 0 rgba(255,255,255,0.9);border-color:rgba(255,255,255,0.3);text-shadow:none;}
+.pg{display:none;padding:10px;}
+.pg.on{display:block;}
+
+/* INVOICE */
+.inv-wrap{background:#fff;border:2.5px solid var(--g);padding:14px 12px;position:relative;overflow:hidden;box-shadow:0 6px 28px rgba(46,125,50,0.13),0 1px 4px rgba(0,0,0,0.06);border-radius:4px;}
+.inv-wrap::before{content:"";position:absolute;inset:0;background:radial-gradient(ellipse at top,rgba(46,125,50,.05),transparent 65%);pointer-events:none;z-index:0;}
+.inv-watermark{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:70%;max-width:400px;opacity:0.06;pointer-events:none;z-index:1;filter:grayscale(100%) contrast(120%);}
+.inv-wrap>*:not(.inv-watermark){position:relative;z-index:2;}
+/* table cells must be transparent so watermark shows through */
+table.mt td,table.mt th{background:transparent!important;}
+table.mt td input{background:transparent!important;}
+.sc2 input{background:rgba(249,251,231,0.7)!important;}
+table.mt tr:nth-child(even) td{background:rgba(232,245,233,0.35)!important;}
+.inv-hdr{display:flex;flex-direction:column;align-items:center;text-align:center;border-bottom:2px solid var(--g);padding-bottom:10px;margin-bottom:12px;background:linear-gradient(180deg,rgba(232,245,233,0.6) 0%,transparent 100%);border-radius:3px 3px 0 0;padding-top:4px;}
+.inv-hdr img.hlogo{width:90px;height:90px;object-fit:contain;}
+.inv-hdr .lph2{width:90px;height:90px;border-radius:50%;background:#e8f5e9;display:flex;align-items:center;justify-content:center;font-size:20px;font-weight:900;color:#2e7d32;}
+.inv-hdr h1{color:var(--gd);font-size:14px;font-weight:700;line-height:1.5;margin-bottom:3px;}
+.inv-hdr .mkt{font-size:12px;color:var(--g);font-weight:700;margin-bottom:4px;}
+/* IMPORTANT: contacts always LTR so numbers show correctly */
+.inv-hdr .con{font-size:10px;color:#333;direction:ltr;unicode-bidi:plaintext;line-height:1.8;text-align:center;}
+.meta{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:8px;}
+.mf{display:flex;align-items:center;border-bottom:1px dotted var(--g);padding-bottom:3px;gap:4px;}
+.mf label{font-weight:700;color:var(--g);white-space:nowrap;font-size:11px;}
+.mf input{flex:1;border:none;outline:none;font-size:12px;font-family:inherit;background:transparent;min-width:0;}
+.twrap{overflow-x:auto;margin:0 -12px;}
+table.mt{width:100%;border-collapse:collapse;text-align:center;min-width:480px;}
+table.mt,table.mt th,table.mt td{border:1px solid var(--g);}
+table.mt th{background:var(--gl);color:var(--gd);padding:6px 3px;font-size:10px;font-weight:700;}
+table.mt td{padding:0;height:28px;vertical-align:middle;font-size:10px;}
+table.mt td input{width:100%;height:28px;border:none;background:transparent;text-align:center;font-size:10px;font-family:inherit;outline:none;padding:0 2px;}
+table.mt td input:focus{background:#f0fff0;}
+.ec input{text-align:right;padding-right:5px;}
+.sc2{background:#f9fbe7;}
+.delbtn{background:none;border:none;color:#c62828;font-size:15px;cursor:pointer;width:24px;padding:0;}
+.add-btn{width:100%;margin-top:5px;padding:6px;border:1.5px dashed var(--g);background:none;color:var(--g);font-size:11px;font-weight:700;border-radius:7px;cursor:pointer;font-family:inherit;}
+.tot-area{margin-top:10px;}
+table.tot{border-collapse:collapse;font-size:11px;width:52%;min-width:180px;}
+table.tot,table.tot td{border:1px solid var(--g);}
+table.tot td{padding:5px 8px;}
+.tlbl{background:#f9f9f9;font-weight:700;text-align:right;width:55%;}
+.tbig{background:var(--gl);color:var(--gd);font-weight:700;}
+
+/* SIGNATURE */
+.sig-section{margin-top:20px;}
+.sig-row{display:flex;justify-content:space-between;gap:10px;}
+.sig-box{flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;}
+.sig-box .slbl{font-size:10px;font-weight:700;color:var(--gd);}
+.canvas-wrap{position:relative;border:1px dashed var(--bd);border-radius:6px;background:#fafafa;width:100%;}
+canvas.sigpad{display:block;width:100%;height:70px;cursor:crosshair;touch-action:none;}
+.sig-img-el{max-width:100%;max-height:70px;display:none;object-fit:contain;}
+.sig-clr{position:absolute;top:2px;left:2px;background:rgba(255,255,255,.9);border:none;border-radius:4px;font-size:9px;color:#c62828;cursor:pointer;padding:2px 4px;}
+.sig-up-btn{font-size:10px;color:var(--g);text-decoration:underline;cursor:pointer;background:none;border:none;font-family:inherit;margin-top:2px;}
+.sig-line{width:100%;border-top:1px dashed var(--g);padding-top:4px;text-align:center;font-size:10px;font-weight:700;color:#333;margin-top:6px;}
+
+.terms{margin-top:12px;background:#fafafa;border-right:4px solid var(--g);padding:8px 10px;font-size:10px;line-height:1.8;color:#222;}
+.act{display:flex;gap:8px;margin-top:10px;}
+.abtn{flex:1;padding:11px 4px;border:none;border-radius:9px;font-size:12px;font-weight:700;font-family:inherit;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:4px;}
+.abtn-save{background:linear-gradient(135deg,#2e7d32,#43a047);color:#fff;box-shadow:0 3px 10px rgba(46,125,50,0.35);}
+.abtn-wa{background:linear-gradient(135deg,#25D366,#128C7E);color:#fff;box-shadow:0 3px 10px rgba(37,211,102,0.35);}
+.abtn-print{background:linear-gradient(135deg,#546e7a,#37474f);color:#fff;box-shadow:0 3px 10px rgba(69,90,100,0.3);}
+.abtn-new{background:linear-gradient(135deg,#1b5e20,#2e7d32);color:#fff;box-shadow:0 3px 10px rgba(27,94,32,0.35);}
+.abtn{transition:transform .15s,box-shadow .15s;}
+.abtn:active{transform:scale(0.97);}
+
+/* HISTORY */
+.hi{background:#fff;border-radius:10px;padding:12px;margin-bottom:10px;border-right:4px solid var(--g);}
+.hi-top{display:flex;justify-content:space-between;margin-bottom:4px;}
+.hi-num{font-weight:700;color:var(--gd);font-size:14px;}
+.hi-date{font-size:11px;color:#888;}
+.hi-cl{font-size:12px;margin-bottom:4px;}
+.hi-tot{font-size:14px;font-weight:700;color:var(--g);}
+.hi-btns{display:flex;gap:8px;margin-top:8px;}
+.hb{flex:1;padding:8px;border-radius:7px;font-size:12px;font-weight:700;border:none;cursor:pointer;font-family:inherit;}
+.hb-l{background:var(--gl);color:var(--gd);}
+.hb-e{background:#e3f2fd;color:#1565c0;}
+.hb-d{background:#ffebee;color:#c62828;}
+.empty{text-align:center;padding:40px 0;color:#aaa;}
+
+/* SETTINGS */
+.sc3{background:#fff;border-radius:10px;padding:14px;margin-bottom:10px;}
+.sh{font-weight:700;color:var(--gd);font-size:13px;margin-bottom:10px;padding-bottom:6px;border-bottom:1px solid var(--bd);}
+.sf{margin-bottom:10px;}
+.sf label{display:block;font-size:11px;color:#666;margin-bottom:3px;font-weight:600;}
+.sf input,.sf textarea{width:100%;padding:9px 10px;border:1.5px solid var(--bd);border-radius:8px;font-size:12px;font-family:inherit;outline:none;}
+.sf textarea{height:60px;resize:vertical;}
+.sf input:focus,.sf textarea:focus{border-color:var(--g);}
+.sbtn{width:100%;padding:12px;background:var(--g);color:#fff;border:none;border-radius:9px;font-size:13px;font-weight:700;font-family:inherit;cursor:pointer;margin-top:4px;}
+.logo-area{display:flex;flex-direction:column;align-items:center;gap:8px;margin-bottom:12px;}
+.logo-area img{width:90px;height:90px;border-radius:50%;border:2px solid var(--bd);object-fit:contain;display:none;}
+.logo-area .lph3{width:90px;height:90px;border-radius:50%;border:2px dashed var(--bd);display:flex;align-items:center;justify-content:center;color:#aaa;font-size:11px;cursor:pointer;}
+.logo-area .upload-lbl{font-size:12px;color:var(--g);text-decoration:underline;cursor:pointer;}
+
+/* MODAL */
+.mbg{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:999;align-items:flex-end;}
+.mbg.open{display:flex;}
+.modal{background:#fff;border-radius:18px 18px 0 0;padding:22px 18px;width:100%;}
+.modal h3{color:var(--gd);font-size:15px;margin-bottom:14px;text-align:center;}
+.mf2{margin-bottom:10px;}
+.mf2 label{display:block;font-size:12px;color:#666;margin-bottom:3px;font-weight:600;}
+.mf2 input,.mf2 textarea{width:100%;padding:10px;border:1.5px solid var(--bd);border-radius:8px;font-size:14px;font-family:inherit;outline:none;}
+.mf2 textarea{height:100px;font-size:12px;}
+.mnote{background:#fff8e1;border-radius:7px;padding:9px;font-size:11px;color:#5d4037;margin-bottom:12px;}
+.mbtns{display:flex;gap:8px;}
+.toast{position:fixed;top:66px;left:50%;transform:translateX(-50%);background:var(--gd);color:#fff;padding:9px 20px;border-radius:20px;font-size:12px;z-index:9999;opacity:0;transition:opacity .3s;pointer-events:none;white-space:nowrap;}
+.toast.show{opacity:1;}
+
+/* ===== PRINT STYLES ===== */
+@media print{
+  @page{margin:8mm;size:A4 portrait;}
+  *{-webkit-print-color-adjust:exact;print-color-adjust:exact;}
+  html,body{height:auto;overflow:visible;background:#fff!important;}
+  /* hide non-invoice elements */
+  #ls,#app .topbar,#app .tabs,.act,.add-btn,.delbtn,.mbg,.sig-clr,.sig-up-btn{display:none!important;}
+  /* show app and invoice page */
+  #app{display:block!important;min-height:unset!important;}
+  #pg-hist,#pg-settings{display:none!important;}
+  #pg-invoice{display:block!important;padding:0!important;}
+  /* invoice wrapper */
+  .inv-wrap{border:1.5px solid #2e7d32!important;padding:8px!important;}
+  .twrap{overflow:visible!important;margin:0!important;}
+  table.mt{min-width:unset!important;width:100%!important;}
+  /* hide canvas, show signature image */
+  canvas.sigpad{display:none!important;}
+  .sig-img-el{display:block!important;max-height:60px!important;}
+  /* contacts LTR */
+  .inv-hdr .con{direction:ltr!important;unicode-bidi:plaintext!important;text-align:center!important;}
+  /* font sizes for single page fit */
+  .inv-hdr img.hlogo,.inv-hdr .lph2{width:70px!important;height:70px!important;}
+  .inv-hdr h1{font-size:11px!important;}
+  .inv-hdr .mkt{font-size:10px!important;}
+  .inv-hdr .con{font-size:9px!important;}
+  .meta .mf label,.meta .mf input{font-size:10px!important;}
+  table.mt th{font-size:9px!important;padding:5px 2px!important;}
+  table.mt td{height:20px!important;font-size:9px!important;}
+  table.mt td input{font-size:9px!important;height:20px!important;}
+  table.tot td{font-size:10px!important;padding:4px 6px!important;}
+  .terms{font-size:9px!important;padding:6px 8px!important;margin-top:8px!important;}
+  .sig-section{margin-top:10px!important;}
+  .sig-line{font-size:9px!important;}
+}
+</style>
+</head>
+<body>
+
+<!-- LOGIN -->
+<div id="ls">
+  <div class="lc">
+    <img class="llogo" id="ll-img" src="" alt="HRT" style="display:none;">
+    <div class="lph" id="ll-ph">HRT</div>
+    <h2>حافظ رائس ٹریڈرز</h2>
+    <p>رائس ڈیلرز اینڈ کمیشن ایجنٹ | غلہ منڈی شیخوپورہ</p>
+    <input type="password" id="pw" placeholder="پاس ورڈ">
+    <div class="lerr" id="lerr">غلط پاس ورڈ</div>
+    <button class="lbtn" onclick="login()">لاگ اِن کریں</button>
+  </div>
+</div>
+
+<!-- APP -->
+<div id="app">
+  <div class="topbar">
+    <button class="ib" onclick="doLogout()">↩</button>
+    <div class="topbar-title">حافظ رائس ٹریڈرز<small>Invoice Generator</small></div>
+    <button class="ib" onclick="newInvoice()">+</button>
+  </div>
+  <div class="tabs">
+    <button class="tab on" id="tab-invoice" onclick="showTab('invoice')">🧾 انوائس</button>
+    <button class="tab" id="tab-hist" onclick="showTab('hist')">🕐 تاریخ</button>
+    <button class="tab" id="tab-settings" onclick="showTab('settings')">⚙️ ترتیبات</button>
+  </div>
+
+  <!-- INVOICE -->
+  <div class="pg on" id="pg-invoice">
+    <div class="inv-wrap" id="printable">
+      <img class="inv-watermark" id="inv-watermark" src="" alt="">
+      <div class="inv-hdr">
+        <img class="hlogo" id="inv-logo" src="" alt="HRT" style="display:none;margin-bottom:8px;">
+        <div class="lph2" id="inv-lph" style="margin-bottom:8px;">HRT</div>
+        <h1 id="d-biz">حافظ رائس ٹریڈرز، رائس ڈیلرز اینڈ کمیشن ایجنٹ</h1>
+        <div class="mkt" id="d-mkt">غلہ منڈی شیخوپورہ</div>
+        <!-- direction:ltr + unicode-bidi:plaintext ensures numbers render left-to-right correctly -->
+        <div class="con" id="d-con" style="text-align:center;direction:rtl;"></div>
+      </div>
+
+      <div class="meta">
+        <div class="mf"><label>نمبر:</label><input id="m-num" type="number" value="582"></div>
+        <div class="mf"><label>تاریخ:</label><input id="m-date" type="date"></div>
+        <div class="mf"><label>بنام:</label><input id="m-client" placeholder="گاہک کا نام"></div>
+        <div class="mf"><label>گاڑی نمبر:</label><input id="m-veh" placeholder="SBB-511"></div>
+      </div>
+
+      <div class="twrap">
+        <table class="mt">
+          <thead>
+            <tr>
+              <th style="width:13%">اخراجات</th>
+              <th style="width:9%">رقم/روپے</th>
+              <th style="width:6%">تعداد</th>
+              <th style="width:11%">جنس/تفصیل</th>
+              <th style="width:7%">بھرتی کلو گرام</th>
+              <th style="width:9%">وزن کانٹا/کلوگرام</th>
+              <th style="width:9%">وزن باردانہ کلو گرام</th>
+              <th style="width:9%">صافی وزن کلو گرام</th>
+              <th style="width:7%">نرخ</th>
+              <th style="width:9%">رقم/روپے</th>
+              <th style="width:5%;background:#fff;border:none;" class="no-print"></th>
+            </tr>
+          </thead>
+          <tbody id="mb"></tbody>
+        </table>
+      </div>
+      <button class="add-btn" onclick="addRow()">+ قطار شامل کریں</button>
+
+      <div class="tot-area">
+        <table class="tot">
+          <tr><td class="tlbl">میزان</td><td id="t-mz">0</td></tr>
+          <tr><td class="tlbl">اخراجات</td><td id="t-ex">0</td></tr>
+          <tr><td class="tlbl tbig">کل میزان</td><td class="tbig" id="t-net">0</td></tr>
+        </table>
+      </div>
+
+      <!-- SIGNATURES -->
+      <div class="sig-section">
+        <div class="sig-row">
+          <div class="sig-box">
+            <span class="slbl">Prop Signature</span>
+            <div class="canvas-wrap">
+              <canvas class="sigpad" id="prop-canvas" height="70"></canvas>
+              <img class="sig-img-el" id="prop-img" alt="">
+              <button class="sig-clr" onclick="clearSig('prop')">✕</button>
+            </div>
+            <button class="sig-up-btn" onclick="document.getElementById('prop-file').click()">تصویر اپلوڈ</button>
+            <input type="file" id="prop-file" accept="image/*" style="display:none" onchange="uploadSig(event,'prop')">
+            <div class="sig-line">Prop Signature</div>
+          </div>
+          <div class="sig-box">
+            <span class="slbl">Acco. Signature</span>
+            <div class="canvas-wrap">
+              <canvas class="sigpad" id="acco-canvas" height="70"></canvas>
+              <img class="sig-img-el" id="acco-img" alt="">
+              <button class="sig-clr" onclick="clearSig('acco')">✕</button>
+            </div>
+            <button class="sig-up-btn" onclick="document.getElementById('acco-file').click()">تصویر اپلوڈ</button>
+            <input type="file" id="acco-file" accept="image/*" style="display:none" onchange="uploadSig(event,'acco')">
+            <div class="sig-line">Acco. Signature</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="terms"><strong>شرائط و ضوابط:</strong> <span id="d-terms">بھول چوک، لین دین، مال کی لوڈنگ کے بعد کسی بھی قسم کے حادثاتی نقصان پر فرم ہذا ذمہ دار نہیں ہے، کوالٹی اور وزن مال پہنچتے ہی چیک کرلیں بعد میں فرم ذمہ دار نہ ہو گی۔</span></div>
+    </div>
+
+    <div class="act">
+      <button class="abtn abtn-save" onclick="saveInv()">💾 محفوظ</button>
+      <button class="abtn abtn-wa" onclick="openWA()">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="white"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413z"/><path d="M12 0C5.373 0 0 5.373 0 12c0 2.124.558 4.121 1.533 5.851L.073 23.927l6.244-1.637A11.944 11.944 0 0012 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 21.818a9.8 9.8 0 01-5.003-1.367l-.359-.214-3.707.972.99-3.614-.234-.371A9.818 9.818 0 012.182 12c0-5.421 4.397-9.818 9.818-9.818 5.421 0 9.818 4.397 9.818 9.818 0 5.421-4.397 9.818-9.818 9.818z"/></svg>
+        WhatsApp
+      </button>
+      <button class="abtn abtn-print" onclick="doPrint()">🖨️ پرنٹ</button>
+    </div>
+    <div class="act" style="margin-top:6px;">
+      <button class="abtn abtn-new" onclick="newInvoice()">+ نئی انوائس</button>
+    </div>
+  </div>
+
+  <!-- HISTORY -->
+  <div class="pg" id="pg-hist"><div id="hl"></div></div>
+
+  <!-- SETTINGS -->
+  <div class="pg" id="pg-settings">
+    <div class="sc3">
+      <div class="sh">🖼️ لوگو اپلوڈ کریں</div>
+      <div class="logo-area">
+        <img id="s-logo-img" alt="logo">
+        <div class="lph3" id="s-logo-ph" onclick="document.getElementById('logo-file').click()">+ لوگو</div>
+        <label class="upload-lbl" onclick="document.getElementById('logo-file').click()">تصویر چُنیں</label>
+        <input type="file" id="logo-file" accept="image/*" style="display:none" onchange="uploadLogo(event)">
+        <button onclick="clearLogo()" style="font-size:11px;color:#c62828;background:none;border:none;cursor:pointer;text-decoration:underline;">لوگو ہٹائیں</button>
+      </div>
+    </div>
+    <div class="sc3">
+      <div class="sh">🏢 کاروبار کی معلومات</div>
+      <div class="sf"><label>کاروبار کا نام</label><input id="s-biz" value="حافظ رائس ٹریڈرز، رائس ڈیلرز اینڈ کمیشن ایجنٹ"></div>
+      <div class="sf"><label>مقام</label><input id="s-mkt" value="غلہ منڈی شیخوپورہ"></div>
+      <div class="sf"><label>رابطہ نمبر</label>      <textarea id="s-con">هارون انور: 0321-4406734، 0300-8571877 | عمير انور: 0321-8671877 | علی انور: 0300-4020147</textarea></div>
+      <div class="sf"><label>شرائط و ضوابط</label><textarea id="s-terms">بھول چوک، لین دین، مال کی لوڈنگ کے بعد کسی بھی قسم کے حادثاتی نقصان پر فرم ہذا ذمہ دار نہیں ہے، کوالٹی اور وزن مال پہنچتے ہی چیک کرلیں بعد میں فرم ذمہ دار نہ ہو گی۔</textarea></div>
+      <button class="sbtn" onclick="saveSettings()">ترتیبات محفوظ کریں ✓</button>
+    </div>
+    <div class="sc3">
+      <div class="sh">🔐 پاس ورڈ تبدیل کریں</div>
+      <div class="sf"><label>پرانا پاس ورڈ</label><input type="password" id="s-opw"></div>
+      <div class="sf"><label>نیا پاس ورڈ</label><input type="password" id="s-npw"></div>
+      <div class="sf"><label>تصدیق</label><input type="password" id="s-cpw"></div>
+      <button class="sbtn" onclick="changePW()">پاس ورڈ تبدیل کریں</button>
+    </div>
+  </div>
+</div>
+
+<!-- WA MODAL -->
+<div class="mbg" id="wam">
+  <div class="modal">
+    <h3>📲 واٹس ایپ پر بھیجیں</h3>
+    <div class="mf2"><label>واٹس ایپ نمبر (مثال: 923001234567)</label><input type="tel" id="wn" dir="ltr" placeholder="923001234567"></div>
+    <div class="mf2"><label>پیغام</label><textarea id="wm"></textarea></div>
+    <div class="mnote">💡 واٹس ایپ کھلنے کے بعد انوائس کا Screenshot لے کر بھیجیں۔</div>
+    <div class="mbtns">
+      <button class="abtn abtn-wa" style="flex:1;" onclick="sendWA()">بھیجیں ✓</button>
+      <button class="abtn" style="flex:1;background:#e0e0e0;color:#333;" onclick="closeWA()">بند کریں</button>
+    </div>
+  </div>
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+const K={PW:'hrt5_pw',NUM:'hrt5_num',HIST:'hrt5_hist',SET:'hrt5_set',LOGO:'hrt5_logo',SES:'hrt5_ses',PSIG:'hrt5_psig',ASIG:'hrt5_asig'};
+const ls=k=>{try{return localStorage.getItem(k);}catch(e){return null;}};
+const lw=(k,v)=>{try{localStorage.setItem(k,v);}catch(e){}};
+const getPW=()=>ls(K.PW)||'hafiz123';
+const getNum=()=>parseInt(ls(K.NUM)||'582');
+const setNum=n=>lw(K.NUM,String(n));
+const getHist=()=>{try{return JSON.parse(ls(K.HIST)||'[]');}catch(e){return[];}};
+const setHist=h=>lw(K.HIST,JSON.stringify(h));
+const getSets=()=>{try{return JSON.parse(ls(K.SET)||'{}');}catch(e){return{};}};
+const setSets=s=>lw(K.SET,JSON.stringify(s));
+const getLogo=()=>ls(K.LOGO)||'';
+
+const DEXP=['کمیشن','بروکری','لوڈنگ','پلاسٹک بیگ','چائنہ بیگ','کاٹن بیگ','جیوٹ بیگ','سوتری','سلائی مشین','دھانک لگوائی','منشیانہ','فیس مارکیٹ'];
+let rows=[];
+const pads={};
+
+// SIGNATURE PADS
+function initPad(id){
+  const canvas=document.getElementById(id+'-canvas');
+  if(!canvas)return;
+  const ctx=canvas.getContext('2d');
+  canvas.width=canvas.offsetWidth||200;
+  canvas.height=70;
+  ctx.strokeStyle='#1b5e20';ctx.lineWidth=1.8;ctx.lineCap='round';
+  let drawing=false,lx=0,ly=0;
+  function getPos(e){
+    const r=canvas.getBoundingClientRect();
+    const t=e.touches?e.touches[0]:e;
+    return{x:(t.clientX-r.left)*(canvas.width/r.width),y:(t.clientY-r.top)*(canvas.height/r.height)};
+  }
+  function start(e){e.preventDefault();drawing=true;const p=getPos(e);lx=p.x;ly=p.y;}
+  function move(e){e.preventDefault();if(!drawing)return;const p=getPos(e);ctx.beginPath();ctx.moveTo(lx,ly);ctx.lineTo(p.x,p.y);ctx.stroke();lx=p.x;ly=p.y;}
+  function stop(){drawing=false;if(canvas.style.display!=='none')saveSig(id,canvas);}
+  canvas.addEventListener('mousedown',start);canvas.addEventListener('mousemove',move);canvas.addEventListener('mouseup',stop);
+  canvas.addEventListener('touchstart',start,{passive:false});canvas.addEventListener('touchmove',move,{passive:false});canvas.addEventListener('touchend',stop);
+  pads[id]=canvas;
+  const saved=ls(id==='prop'?K.PSIG:K.ASIG);
+  if(saved){showSigImg(id,saved);}
+}
+function saveSig(id,canvas){
+  const data=canvas.toDataURL();
+  lw(id==='prop'?K.PSIG:K.ASIG,data);
+  showSigImg(id,data);
+}
+function showSigImg(id,data){
+  const img=document.getElementById(id+'-img');
+  const canvas=pads[id];
+  img.src=data;img.style.display='block';
+  if(canvas)canvas.style.display='none';
+}
+function clearSig(id){
+  const canvas=pads[id];
+  if(canvas){const ctx=canvas.getContext('2d');ctx.clearRect(0,0,canvas.width,canvas.height);canvas.style.display='block';}
+  const img=document.getElementById(id+'-img');img.src='';img.style.display='none';
+  lw(id==='prop'?K.PSIG:K.ASIG,'');
+}
+function uploadSig(e,id){
+  const f=e.target.files[0];if(!f)return;
+  const r=new FileReader();
+  r.onload=ev=>{lw(id==='prop'?K.PSIG:K.ASIG,ev.target.result);showSigImg(id,ev.target.result);};
+  r.readAsDataURL(f);
+}
+
+// LOGO
+function uploadLogo(e){
+  const f=e.target.files[0];if(!f)return;
+  const r=new FileReader();
+  r.onload=ev=>{lw(K.LOGO,ev.target.result);applyLogo(ev.target.result);toast('لوگو اپلوڈ ✓');};
+  r.readAsDataURL(f);
+}
+function clearLogo(){
+  lw(K.LOGO,'');applyLogo('');toast('لوگو ہٹایا ✓');
+}
+function applyLogo(src){
+  const ids_img=['inv-logo','ll-img','s-logo-img'];
+  const ids_ph=['inv-lph','ll-ph','s-logo-ph'];
+  ids_img.forEach((id,i)=>{
+    const img=document.getElementById(id),ph=document.getElementById(ids_ph[i]);
+    if(!img||!ph)return;
+    if(src){img.src=src;img.style.display='block';ph.style.display='none';}
+    else{img.src='';img.style.display='none';ph.style.display='flex';}
+  });
+  // watermark
+  const wm=document.getElementById('inv-watermark');
+  if(wm){wm.src=src||'';wm.style.display=src?'block':'none';}
+}
+
+// LOGIN
+function login(){
+  const v=document.getElementById('pw').value;
+  if(v===getPW()){
+    lw(K.SES,'1');
+    document.getElementById('lerr').style.display='none';
+    document.getElementById('ls').style.display='none';
+    const app=document.getElementById('app');
+    app.style.display='flex';app.style.flexDirection='column';
+    initApp();
+  }else{document.getElementById('lerr').style.display='block';document.getElementById('pw').value='';}
+}
+function doLogout(){if(!confirm('لاگ آؤٹ کریں؟'))return;lw(K.SES,'0');location.reload();}
+document.getElementById('pw').addEventListener('keydown',e=>{if(e.key==='Enter')login();});
+
+function initApp(){
+  document.getElementById('m-date').valueAsDate=new Date();
+  document.getElementById('m-num').value=getNum();
+  applyLogo(getLogo());
+  loadSettings();
+  setContacts(document.getElementById('s-con').value);
+  buildRows();
+  renderHist();
+  setTimeout(()=>{initPad('prop');initPad('acco');},150);
+}
+
+function buildRows(data){
+  rows=data?data.map(r=>({bardana:r.bardana||'',safi:r.safi||'',...r})):DEXP.map(e=>({exp:e,ea:'',qty:'',goods:'',bh:'',wt:'',bardana:'',safi:'',rate:'',sa:''}));
+  renderTable();
+}
+
+function addRow(){rows.push({exp:'',ea:'',qty:'',goods:'',bh:'',wt:'',bardana:'',safi:'',rate:'',sa:''});renderTable();}
+
+function renderTable(){
+  const tb=document.getElementById('mb');
+  tb.innerHTML='';
+  rows.forEach((r,i)=>{
+    const tr=document.createElement('tr');
+    tr.innerHTML=`
+      <td class="ec"><input value="${x(r.exp)}" placeholder="اخراجات" oninput="rows[${i}].exp=this.value"></td>
+      <td><input type="number" value="${r.ea}" oninput="rows[${i}].ea=this.value;calcTot()"></td>
+      <td><input type="number" value="${r.qty}" oninput="rows[${i}].qty=this.value;auto(${i})"></td>
+      <td><input value="${x(r.goods)}" oninput="rows[${i}].goods=this.value"></td>
+      <td><input type="number" value="${r.bh}" oninput="rows[${i}].bh=this.value;auto(${i})"></td>
+      <td><input type="number" value="${r.wt}" id="wt${i}" style="background:#f9fbe7;" oninput="rows[${i}].wt=this.value;autoSafi(${i})"></td>
+      <td><input type="number" value="${r.bardana}" id="bd${i}" oninput="rows[${i}].bardana=this.value;autoSafi(${i})"></td>
+      <td><input type="number" value="${r.safi}" id="sf${i}" style="background:#e8f5e9;" readonly></td>
+      <td><input type="number" value="${r.rate}" oninput="rows[${i}].rate=this.value;auto(${i})"></td>
+      <td class="sc2"><input type="number" value="${r.sa}" id="sa${i}" oninput="rows[${i}].sa=this.value;calcTot()"></td>
+      <td style="border:none;padding:0 1px;"><button class="delbtn" onclick="delRow(${i})">×</button></td>`;
+    tb.appendChild(tr);
+  });
+  calcTot();
+}
+
+function x(s){return(s||'').replace(/"/g,'&quot;');}
+
+function auto(i){
+  const r=rows[i];
+  const q=parseFloat(r.qty)||0,b=parseFloat(r.bh)||0,rt=parseFloat(r.rate)||0;
+  // وزن کانٹا = تعداد × بھرتی
+  if(q>0&&b>0){
+    rows[i].wt=parseFloat((q*b).toFixed(2));
+    const wtel=document.getElementById('wt'+i);
+    if(wtel)wtel.value=rows[i].wt;
+    // recalc صافی وزن after wt update
+    autoSafi(i);
+  }
+  // رقم = صافی وزن ÷ 40 × نرخ
+  const safi=parseFloat(rows[i].safi)||0;
+  if(safi>0&&rt>0){
+    rows[i].sa=parseFloat((safi/40*rt).toFixed(2));
+    const el=document.getElementById('sa'+i);
+    if(el)el.value=rows[i].sa;
+  }
+  calcTot();
+}
+
+function autoSafi(i){
+  const r=rows[i];
+  const wt=parseFloat(r.wt)||0, bd=parseFloat(r.bardana)||0;
+  // صافی وزن = وزن کانٹا - وزن باردانہ
+  const safi=parseFloat((wt-bd).toFixed(2));
+  rows[i].safi=safi>=0?safi:0;
+  const el=document.getElementById('sf'+i);
+  if(el)el.value=rows[i].safi;
+  // recalc رقم using new safi
+  const rt=parseFloat(r.rate)||0;
+  if(rows[i].safi>0&&rt>0){
+    rows[i].sa=parseFloat((rows[i].safi/40*rt).toFixed(2));
+    const sa=document.getElementById('sa'+i);
+    if(sa)sa.value=rows[i].sa;
+  }
+  calcTot();
+}
+
+function delRow(i){rows.splice(i,1);renderTable();}
+
+function calcTot(){
+  const mz=rows.reduce((s,r)=>s+(parseFloat(r.sa)||0),0);
+  const ex=rows.reduce((s,r)=>s+(parseFloat(r.ea)||0),0);
+  document.getElementById('t-mz').textContent=fmt(mz);
+  document.getElementById('t-ex').textContent=fmt(ex);
+  document.getElementById('t-net').textContent=fmt(mz+ex);
+}
+
+function fmt(n){return parseFloat(n||0).toLocaleString('en-PK',{minimumFractionDigits:0,maximumFractionDigits:2});}
+
+function collect(){
+  return{num:document.getElementById('m-num').value,date:document.getElementById('m-date').value,
+    client:document.getElementById('m-client').value,veh:document.getElementById('m-veh').value,
+    rows:rows.map(r=>({...r})),
+    mz:document.getElementById('t-mz').textContent,ex:document.getElementById('t-ex').textContent,net:document.getElementById('t-net').textContent,
+    psig:ls(K.PSIG)||'',asig:ls(K.ASIG)||''};
+}
+
+function saveInv(){
+  const d=collect(),h=getHist();
+  const idx=h.findIndex(inv=>inv.num===d.num);
+  if(idx>=0){h[idx]={...d,at:new Date().toISOString()};}
+  else{h.unshift({...d,at:new Date().toISOString()});setNum((parseInt(d.num)||0)+1);}
+  setHist(h);toast('انوائس محفوظ ✓');
+}
+
+function newInvoice(){
+  if(!confirm('نئی انوائس بنائیں؟'))return;
+  document.getElementById('m-num').value=getNum();
+  document.getElementById('m-date').valueAsDate=new Date();
+  document.getElementById('m-client').value='';document.getElementById('m-veh').value='';
+  buildRows();showTab('invoice');
+}
+
+// HISTORY
+function renderHist(){
+  const h=getHist(),el=document.getElementById('hl');
+  if(!h.length){el.innerHTML='<div class="empty">کوئی پرانی انوائس نہیں</div>';return;}
+  el.innerHTML='';
+  h.forEach((inv,i)=>{
+    const d=document.createElement('div');d.className='hi';
+    d.innerHTML=`<div class="hi-top"><span class="hi-num">#${inv.num}</span><span class="hi-date">${inv.date}</span></div>
+      <div class="hi-cl">${inv.client||'—'} | گاڑی: ${inv.veh||'—'}</div>
+      <div class="hi-tot">کل میزان: ${inv.net} روپے</div>
+      <div class="hi-btns">
+        <button class="hb hb-l" onclick="loadInv(${i})">لوڈ</button>
+        <button class="hb hb-e" onclick="editInv(${i})">ترمیم</button>
+        <button class="hb hb-d" onclick="delInv(${i})">حذف</button>
+      </div>`;
+    el.appendChild(d);
+  });
+}
+function fillInv(inv){
+  document.getElementById('m-num').value=inv.num;document.getElementById('m-date').value=inv.date;
+  document.getElementById('m-client').value=inv.client||'';document.getElementById('m-veh').value=inv.veh||'';
+  buildRows(inv.rows);
+  if(inv.psig){lw(K.PSIG,inv.psig);showSigImg('prop',inv.psig);}
+  if(inv.asig){lw(K.ASIG,inv.asig);showSigImg('acco',inv.asig);}
+}
+function loadInv(i){fillInv(getHist()[i]);showTab('invoice');toast('انوائس لوڈ ✓');}
+function editInv(i){fillInv(getHist()[i]);showTab('invoice');toast('ترمیم کے لیے تیار ✓');}
+function delInv(i){if(!confirm('حذف کریں؟'))return;const h=getHist();h.splice(i,1);setHist(h);renderHist();}
+
+// WA
+function openWA(){
+  const d=collect(),s=getSets();
+  document.getElementById('wm').value=`السلام علیکم ${d.client||'صاحب'} جی،\n\nآپ کی انوائس تیار ہے:\n\n🏢 ${s.biz||'حافظ رائس ٹریڈرز'}\n📄 نمبر: ${d.num}\n📅 تاریخ: ${d.date}\n🚛 گاڑی: ${d.veh}\n\n💰 میزان: ${d.mz} روپے\n📦 اخراجات: ${d.ex} روپے\n✅ کل میزان: ${d.net} روپے\n\nشکریہ`;
+  document.getElementById('wam').classList.add('open');
+}
+function sendWA(){
+  const n=document.getElementById('wn').value.replace(/\D/g,'');
+  if(!n){alert('نمبر درج کریں');return;}
+  window.open(`https://wa.me/${n}?text=${encodeURIComponent(document.getElementById('wm').value)}`,'_blank');
+  closeWA();
+}
+function closeWA(){document.getElementById('wam').classList.remove('open');}
+
+// SETTINGS
+function loadSettings(){
+  const s=getSets();
+  if(s.biz)document.getElementById('s-biz').value=s.biz;
+  if(s.mkt)document.getElementById('s-mkt').value=s.mkt;
+  if(s.con)document.getElementById('s-con').value=s.con;
+  if(s.terms)document.getElementById('s-terms').value=s.terms;
+  applySettings(s);
+}
+function applySettings(s){
+  if(s.biz)document.getElementById('d-biz').textContent=s.biz;
+  if(s.mkt)document.getElementById('d-mkt').textContent=s.mkt;
+  if(s.con)setContacts(s.con);
+  if(s.terms)document.getElementById('d-terms').textContent=s.terms;
+}
+function setContacts(txt){
+  // Wrap each phone number in a LTR span so RTL page doesn't reverse digits
+  const safe=txt.replace(/([\d\-]+)/g,'<span style="direction:ltr;display:inline;unicode-bidi:embed;">$1</span>');
+  document.getElementById('d-con').innerHTML=safe;
+}
+function saveSettings(){
+  const s={biz:document.getElementById('s-biz').value,mkt:document.getElementById('s-mkt').value,con:document.getElementById('s-con').value,terms:document.getElementById('s-terms').value};
+  setSets(s);applySettings(s);toast('ترتیبات محفوظ ✓');
+}
+function changePW(){
+  const o=document.getElementById('s-opw').value,n=document.getElementById('s-npw').value,c=document.getElementById('s-cpw').value;
+  if(o!==getPW()){toast('پرانا پاس ورڈ غلط');return;}
+  if(n.length<4){toast('کم از کم 4 حروف');return;}
+  if(n!==c){toast('پاس ورڈ مماثل نہیں');return;}
+  lw(K.PW,n);['s-opw','s-npw','s-cpw'].forEach(id=>document.getElementById(id).value='');
+  toast('پاس ورڈ تبدیل ✓');
+}
+
+function showTab(t){
+  ['invoice','hist','settings'].forEach(n=>{
+    document.getElementById('pg-'+n).classList.toggle('on',n===t);
+    document.getElementById('tab-'+n).classList.toggle('on',n===t);
+  });
+  if(t==='hist')renderHist();
+}
+function toast(m){const t=document.getElementById('toast');t.textContent=m;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2200);}
+
+function doPrint(){
+  // Make sure invoice tab is active, then print
+  showTab('invoice');
+  setTimeout(()=>window.print(),100);
+}
+
+// BOOT
+if(ls(K.SES)==='1'){
+  document.getElementById('ls').style.display='none';
+  const app=document.getElementById('app');app.style.display='flex';app.style.flexDirection='column';
+  initApp();
+}else{applyLogo(getLogo());}
+</script>
+</body>
+</html>
